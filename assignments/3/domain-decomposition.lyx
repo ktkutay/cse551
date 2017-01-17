@@ -1,0 +1,245 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language british
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize 12
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+CSE551 Assignment #3
+\begin_inset Newline newline
+\end_inset
+
+Short Review of Domain Decomposition Method
+\end_layout
+
+\begin_layout Author
+Mustafa Kutay Yabaş
+\end_layout
+
+\begin_layout Date
+December 3, 2016
+\end_layout
+
+\begin_layout Standard
+Domain Decomposition is a divide and conquer method used to solve numerical
+ problems.
+ Most importantly it allows for parallel computing in large problems by
+ dividing the problem into subdomains.
+\begin_inset CommandInset citation
+LatexCommand cite
+key "cai2003overlapping"
+
+\end_inset
+
+ Then each subproblem is solved in its subdomain where the solutions are
+ merged together at the end.
+ It is flexible and efficient in its nature and applicable to a large variety
+ of problems.
+ It allows numerical solutions for irregular shapes or usage of different
+ computational approaches in different subdomains.
+\end_layout
+
+\begin_layout Standard
+While there are different methods of Domain Decomposition (DD), overlapping
+ DD is easy to implement and has an intuitive setup.
+ As an example application we can explain the solution of Laplacian equation
+ with finite difference method.
+ In the finite difference method we create a hypothetical stencil or a grid,
+ then calculate the value of the each cell of the grid depending on the
+ differences of the neighbouring cells.
+ The numbers of the required neighbours increase by increasing orders of
+ derivatives and accuracy.
+ So if we slice the whole grid into sub-grids we should also consider the
+ required neighbours.
+\end_layout
+
+\begin_layout Standard
+Laplacian is a 
+\begin_inset Formula $2^{nd}$
+\end_inset
+
+ order derivative and if we want to solve the equation with finite difference
+ method with 
+\begin_inset Formula $1^{st}$
+\end_inset
+
+ order accuracy then we need at least one neighbouring cell.
+ So if we create a 
+\begin_inset Formula $10\times10$
+\end_inset
+
+ grid and want to solve the problem in 4, 
+\begin_inset Formula $5\times5$
+\end_inset
+
+ sub-grids, in practice the grids should be 
+\begin_inset Formula $6\times6$
+\end_inset
+
+.
+ The solution of the 
+\begin_inset Formula $5\times5$
+\end_inset
+
+ matrix will require the information of 
+\begin_inset Formula $6^{th}$
+\end_inset
+
+ row and column or other corresponding columns for other sub-grids.
+ So the overlapping parts are these excess columns and rows in each sub-grid.
+ They are not calculated and can be omitted when the sub-grids are merged
+ at the end.
+ So a large 
+\begin_inset Formula $N\times N$
+\end_inset
+
+ matrix can be divided into smaller sub-grids, each sub-grid can be computed
+ in parallel to be merged later.
+ The only disadvantage is the excess rows and columns present in every sub-grid
+ causing increased memory usage but it is an efficient trade of in return
+ of decreased computing time.
+\end_layout
+
+\begin_layout Standard
+A very efficient case will be a problem with emerging patterns or cyclic
+ functions.
+ Instead of recalculation of repeated patterns one can slice the grid wisely
+ then just solve the one of a kind grids and duplicate the solutions to
+ fill the pattern.
+\end_layout
+
+\begin_layout Standard
+My area of research includes extensive usage of Monte Carlo methods for
+ simulations, sampling and inference.
+ A similar approach like in domain decomposition model may be beneficial
+ for parallelisation of the simulations processes to obtain more samples
+ in the same unit of time.
+ However the overlaps are not predefined in a Monte Carlo solution as the
+ process is based on randomness.
+ In the course of computation, events that pass the boundaries of the subdomains
+ may arise and they should be sent between threads asynchronously.
+\begin_inset CommandInset citation
+LatexCommand cite
+key "brunner2009efficient"
+
+\end_inset
+
+ This results in threads waiting for each other and messages to be transmitted
+ which decreases the true benefits of parallel computing.
+ So the trade off may be bigger in the Monte Carlo case compared to deterministi
+c problems.
+\end_layout
+
+\begin_layout Standard
+Another problem is to attain independent randomness between threads.
+ Order of execution or other dependencies between threads will probably
+ introduce autocorrelation and introduce a randomisation bias in the problem
+ which degrades the whole benefits of using Monte Carlo methods.
+\end_layout
+
+\begin_layout Standard
+There surely are methods to eliminate biases in the above-mentioned, however
+ in practice it is a more common approach to run separate instances of the
+ entire Monte Carlo problem in independent threads then combine the results.
+ After all the solution is a random sample of the population and different
+ random samples merged together continue to be random.
+ On the other hand if the single Monte Carlo thread converges very slowly
+ this approach is not desirable.
+ So domain decomposition methods are efficient to overcome slow, non-uniform
+ convergence of variables and high memory requirements in high dimensional
+ simulations.
+\begin_inset CommandInset citation
+LatexCommand cite
+key "wagner2011hybrid"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In conclusion domain decomposition methods are beneficial in some cases
+ of Monte Carlo methods and can be used to increase the speed of convergence
+ of the variables to their expected values.
+\end_layout
+
+\begin_layout Title
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "domain-decomposition"
+options "plain"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
